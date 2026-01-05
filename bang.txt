@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bang.AI - Chatbot Keren</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #0f172a; 
+            color: white; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+        }
+        /* Header */
+        .header { 
+            background: #1e293b; 
+            padding: 15px; 
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            border-bottom: 2px solid #334155;
+            color: #38bdf8;
+        }
+        /* Area Chat */
+        #chat-container { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+        }
+        .msg { 
+            padding: 10px 15px; 
+            border-radius: 18px; 
+            max-width: 85%; 
+            line-height: 1.4;
+            font-size: 15px;
+        }
+        .user { 
+            align-self: flex-end; 
+            background: #38bdf8; 
+            color: #0f172a; 
+            border-bottom-right-radius: 2px;
+        }
+        .bot { 
+            align-self: flex-start; 
+            background: #1e293b; 
+            color: #e2e8f0; 
+            border-bottom-left-radius: 2px;
+            border: 1px solid #334155;
+        }
+        /* Input Area */
+        .input-area { 
+            background: #1e293b; 
+            padding: 15px; 
+            display: flex; 
+            gap: 10px; 
+            align-items: center;
+        }
+        input { 
+            flex: 1; 
+            padding: 12px 15px; 
+            border-radius: 25px; 
+            border: 1px solid #334155; 
+            background: #0f172a; 
+            color: white; 
+            outline: none; 
+        }
+        button { 
+            background: #38bdf8; 
+            border: none; 
+            color: #0f172a; 
+            padding: 10px 20px; 
+            border-radius: 25px; 
+            font-weight: bold; 
+            cursor: pointer; 
+        }
+        button:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+
+    <div class="header">🔥 BANG.AI 🔥    madeby:kianrayhanfauzi</div>
+
+    <div id="chat-container">
+        <div class="msg bot">Yo! Gue Bang.AI. Udah siap ngobrol nih, mau nanya apa?</div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Ketik pesan..." onkeypress="handleEnter(event)">
+        <button onclick="kirim()">KIRIM</button>
+    </div>
+
+    <script>
+        const API_KEY_GROQ = "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";
+
+        async function kirim() {
+            const input = document.getElementById('user-input');
+            const container = document.getElementById('chat-container');
+            const pesan = input.value.trim();
+
+            if (!pesan) return;
+
+            // Tampilkan pesan user
+            container.innerHTML += `<div class="msg user">${pesan}</div>`;
+            input.value = "";
+            container.scrollTop = container.scrollHeight;
+
+            // Efek loading
+            const loadingId = "load-" + Date.now();
+            container.innerHTML += `<div class="msg bot" id="${loadingId}">Bentar, mikir...</div>`;
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${API_KEY_GROQ}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [
+                            {role: "system", content: "Lo adalah Bang.AI, asisten yang asik, gaul, pake bahasa tongkrongan Jakarta, tapi pinter banget."},
+                            {role: "user", content: pesan}
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                const jawaban = data.choices[0].message.content;
+
+                // Hapus loading, ganti jawaban
+                document.getElementById(loadingId).innerText = jawaban;
+
+            } catch (e) {
+                document.getElementById(loadingId).innerText = "Waduh, koneksi bermasalah atau API Key salah nih, Boss.";
+            }
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') kirim();
+        }
+    </script>
+</body>
+</html>
